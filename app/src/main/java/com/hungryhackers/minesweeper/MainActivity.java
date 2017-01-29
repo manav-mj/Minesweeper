@@ -60,14 +60,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         setUpBoard();
 
-        for (int i = 0 ; i<n ; i++) {
-            for (int j = 0; j < n; j++) {
-                if(buttons[i][j].getMine()==NO_MINE)
-                    buttons[i][j].setText(Integer.toString(buttons[i][j].neighbour));
-                else
-                    buttons[i][j].setText(mine.toString());
-            }
-        }
+//        for (int i = 0 ; i<n ; i++) {
+//            for (int j = 0; j < n; j++) {
+//                if(buttons[i][j].getMine()==NO_MINE)
+//                    buttons[i][j].setText(Integer.toString(buttons[i][j].neighbour));
+//                else
+//                    buttons[i][j].setText(mine.toString());
+//            }
+//        }
 
 
     }
