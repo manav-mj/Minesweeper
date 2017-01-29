@@ -68,8 +68,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 //                    buttons[i][j].setText(mine.toString());
 //            }
 //        }
-
-
     }
 
     @Override
