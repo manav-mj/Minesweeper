@@ -17,4 +17,8 @@
     <item
         android:id="@+id/hard"
         android:title="Hard" />
+
+    <item
+        android:id="@+id/howToPlay"
+        android:title="How To Play"/>
 </menu>

@@ -7,21 +7,36 @@
     android:layout_height="match_parent"
     tools:context="com.hungryhackers.minesweeper.MainActivity"
     android:orientation="vertical"
-    android:gravity="center_horizontal">
+    android:gravity="center_horizontal"
+    android:padding="9dp"
+    android:background="@drawable/minesweeper_border">
 
-    <ImageView
-        app:srcCompat="@drawable/smiley"
-        android:id="@+id/replaySmiley"
-        android:layout_margin="5dp"
-        android:layout_width="40dp"
-        android:layout_height="40dp"
-        android:visibility="gone" />
-
-    <TextView
-        android:text="Score: "
+    <LinearLayout
+        android:orientation="horizontal"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:id="@+id/score" />
+        android:gravity="center">
+
+        <TextView
+            android:text="Score: 00"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/score"
+            android:padding="5dp"
+            android:gravity="center"
+            android:layout_weight="0.25"
+            style="@android:style/Widget.TextView.PopupMenu" />
+
+        <ImageView
+            app:srcCompat="@drawable/smiley"
+            android:id="@+id/replaySmiley"
+            android:layout_margin="5dp"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:visibility="gone"
+            android:layout_weight="0.75" />
+
+    </LinearLayout>
 
     <LinearLayout
         android:orientation="vertical"

@@ -1,5 +1,6 @@
 package com.hungryhackers.minesweeper;
 
+import android.content.SharedPreferences;
 import android.graphics.Typeface;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -36,6 +37,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     ArrayList<Integer> iteration_Y = new ArrayList<>(Arrays.asList(-1,0,1,1,1,0,-1,-1));
 
     HashSet<Integer> coordinates_visited = new HashSet<>();
+    HashSet<String> opened = new HashSet<>();
 
     ImageView reset;
     Character mine = 'Ø';
@@ -60,14 +62,15 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         setUpBoard();
 
-//        for (int i = 0 ; i<n ; i++) {
-//            for (int j = 0; j < n; j++) {
-//                if(buttons[i][j].getMine()==NO_MINE)
-//                    buttons[i][j].setText(Integer.toString(buttons[i][j].neighbour));
-//                else
-//                    buttons[i][j].setText(mine.toString());
-//            }
-//        }
+        for (int i = 0 ; i<n ; i++) {
+            for (int j = 0; j < n; j++) {
+                if(buttons[i][j].getMine()==NO_MINE)
+                    buttons[i][j].setText(Integer.toString(buttons[i][j].neighbour));
+                else
+                    buttons[i][j].setText(mine.toString());
+            }
+        }
+
     }
 
     @Override
@@ -111,6 +114,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     public void resetBoard(){
         gameOver = false;
+        opened.clear();
         for (int i = 0 ; i<n ; i++){
             for (int j = 0 ; j<n ; j++){
                 buttons[i][j].setText("");
@@ -124,9 +128,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
         menu_smiley_button.setIcon(R.drawable.smiley);
         setMinesAndNeighbours();
+        score = 0;
+        textViewScore.setText("Score: " + Integer.toString(score));
     }
 
     private void setUpBoard() {
+        opened.clear();
         boardLayout.removeAllViews();
         buttons = new MyButton[n][n];
         rows = new LinearLayout[n];
@@ -163,11 +170,18 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     private void setMinesAndNeighbours() {
+        int l = 0;
+        int m = 0;
         for (int i = 0 ; i<level ; i++) {
             random_x = r.nextInt(n);
             random_y = r.nextInt(n);
+            if (l == random_x && m == random_y) {
+                i--;
+                continue;
+            }
+            l = random_x;
+            m = random_y;
             buttons[random_x][random_y].setMine(MINE);
-            buttons[random_x][random_y].setTypeface(null, Typeface.BOLD_ITALIC);
         }
         for (int i = 0 ; i<n ; i++) {
             for (int j = 0; j < n; j++) {
@@ -206,41 +220,40 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             b.setText(mine.toString());
             Toast.makeText(this, "You Loose", Toast.LENGTH_SHORT).show();
             gameOver = true;
-//            reset.setImageDrawable(getDrawable(R.drawable.smiley_sad));
             menu_smiley_button.setIcon(R.drawable.smiley_sad);
             revealAllMines();
             b.setBackgroundColor(getResources().getColor(R.color.wrongTile));
+
+            SharedPreferences sp = getSharedPreferences("Minesweeper_highScore", MODE_PRIVATE);
+            int high_score = sp.getInt("HIGH_SCORE", 0);
+            SharedPreferences.Editor editor = sp.edit();
+
+            if (score > high_score){
+                editor.putInt("HIGH_SCORE", score);
+                editor.commit();
+            }
+
             return;
         }else {
             if (b.neighbour == 0) {
                 revealTillNoZero(b.x,b.y);
-                score += coordinates_visited.size();
                 textViewScore.setText("Score: " + Integer.toString(score));
                 coordinates_visited.clear();
             }
             else {
+                opened.add(encodeCoordinates(b.x,b.y));
                 b.clicked = true;
-                score ++;
-                textViewScore.setText("Score: " + Integer.toString(score));
                 b.setText(Integer.toString(b.neighbour));
             }
+            score = opened.size();
+            textViewScore.setText("Score: " + Integer.toString(score));
         }
 
-//        if (score >= n*n-level){
-//            int count = 0;
-//            for (int i=0 ; i<n ; i++){
-//                for (int j=0 ; j<n ; j++){
-//                    if (buttons[i][j].clicked){
-//                        count ++;
-//                    }
-//                }
-//            }
-//            if (count == n*n-level){
-//                menu_smiley_button.setIcon(R.drawable.smiley_thug);
-//                Toast.makeText(this, "YOU WIN !!", Toast.LENGTH_LONG);
-//                gameOver = true;
-//            }
-//        }
+        if (score == n*n - level){
+            gameOver = true;
+            Toast.makeText(this, "You Win !!", Toast.LENGTH_SHORT).show();
+        }
+
     }
 
     private void revealAllMines() {
@@ -257,26 +270,26 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private void revealTillNoZero(int x, int y) {
         int coord = x*10+y;
         coordinates_visited.add(coord);
+        opened.add(encodeCoordinates(x,y));
         for (int k = 0 ; k<iteration_X.size() ; k++){
-            int a = x+iteration_X.get(k);
-            int b = y+iteration_Y.get(k);
+            int a = x + iteration_X.get(k);
+            int b = y + iteration_Y.get(k);
             if ((a>=0&&a<n) && (b>=0&&b<n)) {
-                coord = a*10+b;
-                if (!coordinates_visited.contains(coord)) {
-                    buttons[a][b].setBackgroundResource(R.drawable.clicked_button);
-                    buttons[a][b].clicked = true;
+                coord = a * 10 + b;
 
+                buttons[a][b].setBackgroundResource(R.drawable.clicked_button);
+                buttons[a][b].clicked = true;
+
+                if (buttons[a][b].neighbour == 0 && !coordinates_visited.contains(coord)) {
                     coordinates_visited.add(coord);
-
-                    if (buttons[a][b].neighbour == 0) {
-                        buttons[x][y].neighbour = -1;
-                        revealTillNoZero(a, b);
-                    } else if (buttons[a][b].neighbour > 0) {
-                        buttons[a][b].setText(Integer.toString(buttons[a][b].neighbour));
-                    }
+                    buttons[x][y].neighbour = -1;
+                    revealTillNoZero(a, b);
+                } else if (buttons[a][b].neighbour > 0 && !coordinates_visited.contains(coord)) {
+                    coordinates_visited.add(coord);
+                    buttons[a][b].setText(Integer.toString(buttons[a][b].neighbour));
                 }
 
-
+                opened.add(encodeCoordinates(a,b));
             }
         }
     }
@@ -299,5 +312,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             b.setText("");
         }
         return true;
+    }
+
+    private String encodeCoordinates(int a, int b){
+        return Integer.toString(a) + "." + Integer.toString(b);
     }
 }
